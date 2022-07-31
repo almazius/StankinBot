@@ -53,6 +53,16 @@ namespace StankinBot_v1
                     await SearchOpLabPlus(botClient, update, chatId);
                     break;
                 case States.SearchOPBlock:
+                    // empty
+                    break;
+                case States.SearchOOP:
+                    await SearchOOP(botClient, update, chatId);
+                    break;
+                case States.SearchOOPLab:
+                    await SearchOOPLab(botClient, update, chatId);
+                    break;
+                case States.SearchOOPLabPlus:
+                    await SearchOOpLabPlus(botClient, update, chatId);
                     break;
                 default:
                     await botClient.SendTextMessageAsync(chatId, "Неизвестная ошибка!");
@@ -60,7 +70,7 @@ namespace StankinBot_v1
             }
         }
 
-#region Tasks
+        #region Tasks
         private static async Task Start(ITelegramBotClient botClient, long chatId)
         {
 
@@ -85,17 +95,22 @@ namespace StankinBot_v1
             {
                 State[chatId] = States.SearchNachert;
                 await botClient.SendTextMessageAsync(chatId, "Что конкретно Вас интересует?" +
-             "\n\t1) Метрические задачи\n\t2) Тело с окном\n\t3) 4 задачки на А4\n\t4) Помощь на контрольной работе(?)\n(Ответ цифрой)", replyMarkup: KeyBoards.replyKeyboardNachert);
+             "\n\t1) Метрические задачи\n\t2) Тело с окном\n\t3) 4 задачки на А4\n\t4) Помощь на контрольной работе(?)",
+            replyMarkup: KeyBoards.replyKeyboardNachert);
             }
             else if (update.Message.Text.ToLower() == "основые программирования")
             {
                 State[chatId] = States.SearchOP;
                 await botClient.SendTextMessageAsync(chatId, "Что конкретно Вас интересует?" +
-            "\n\t1) Лабораторная работа\n\t2) Лабораторная работа+Отчёт+Блоксхема\n\t3) Блоксхема по вашему коду(?)\n(Ответ цифрой)");
+            "\n\t1) Лабораторная работа\n\t2) Лабораторная работа+Отчёт+Блоксхема\n\t3) Блоксхема по вашему коду(?)", 
+            replyMarkup: KeyBoards.replySearchKeybord);
             }
             else if (update.Message.Text.ToLower() == "объектно - ориентированное программирование")
             {
-                //
+                State[chatId] = States.SearchOOP;
+                await botClient.SendTextMessageAsync(chatId, "Что конкретно Вас интересует?" +
+            "\n\t1) Лабораторная работа\n\t2) Лабораторная работа+Отчёт+Блоксхема\n\t3) Блоксхема по вашему коду(?)",
+            replyMarkup: KeyBoards.replySearchKeybord);
             }
             else if (update.Message.Text.ToLower() == "технические средства информационных систем")
             {
@@ -111,7 +126,7 @@ namespace StankinBot_v1
         {
             switch (update.Message.Text.ToLower())        // Проверка условия: что интересует
             {
-                case "1) метрические задачи":
+                case "метрические задачи":
                     State[chatId] = States.SearchNachertMetr;
                     using (var stream = System.IO.File.OpenRead("D:\\DEV\\StankinBot_v1\\StankinBot_v1\\image/Metrichki_variants.jpg"))
                     {
@@ -119,21 +134,20 @@ namespace StankinBot_v1
                         await botClient.SendPhotoAsync(chatId, stream, "Сверьте точки и напишите ваш вариант.");
                     }
                     break;
-                case "2) тело с окном":
+                case "тело с окном":
                     //
                     break;
-                case "3) 4 задачки на а4":
+                case "4 задачки на а4":
                     //
                     break;
-                case "4) помощь на контрольной работе(?)":
+                case "помощь на контрольной работе(?)":
                     //
                     break;
-                case "Назад":
+                case "назад":
                     State[chatId] = State[chatId] - 1;
                     break;
                 default:
-                    await botClient.SendTextMessageAsync(chatId, "Введен некорректный номер");
-                    State[chatId] = States.Home;
+                    await botClient.SendTextMessageAsync(chatId, "Ошибка, пробуй снова!");
                     break;
             }
         }
@@ -161,28 +175,28 @@ namespace StankinBot_v1
 
         private static async Task SearchOP(ITelegramBotClient botClient, Update update, long chatId)
         {
-            switch (update.Message.Text)
+            switch (update.Message.Text.ToLower())
             {
-                case "1":
+                case "лабораторная работа":
                     State[chatId] = States.SearchOPLab;
                     await botClient.SendTextMessageAsync(chatId, "Введите номер лабораторной и номер задания (1-13):\n" +
                     "Сверка с файлом: https://docs.google.com/document/d/1f5l2JHLtRz8EIwaEBQKja41mwLD4E19x/edit");
                     break;
-                case "2":
+                case "лабораторная работа+отчёт+блоксхема":
                     State[chatId] = States.SearchOPLabPlus;
                     await botClient.SendTextMessageAsync(chatId, "Введите номер лабораторной и номер задания (1-13):\n" +
                     "Сверка с файлом: https://docs.google.com/document/d/1f5l2JHLtRz8EIwaEBQKja41mwLD4E19x/edit");
                     break;
-                case "3":
+                case "блоксхема по вашему коду":
                     State[chatId] = States.SearchOPBlock;
                     await botClient.SendTextMessageAsync(chatId, "Пока в разработке"); // ???
+                    break;
+                case "назад":
+                    State[chatId] = States.SearchLesson;
                     break;
                 default:
                     await botClient.SendTextMessageAsync(chatId, "Ошибка, пробуй снова!");
                     break;
-            }
-            if (update.Message.Text == "1")
-            {
             }
         }
 
@@ -206,9 +220,50 @@ namespace StankinBot_v1
             await botClient.SendTextMessageAsync(chatId, $"Тут будет отправка архива, но я хочу спать и сделаю ее позже.\n{arr.GetValue(0)} - {arr.GetValue(1)}\n");
         }
 
+        private static async Task SearchOOP(ITelegramBotClient botClient, Update update, long chatId)
+        {
+            switch (update.Message.Text.ToLower())
+            {
+                case "лабораторная работа":
+                    State[chatId] = States.SearchOOPLab;
+                    await botClient.SendTextMessageAsync(chatId, "Введите номер лабораторной и номер задания (2-13):\n" +
+                    "Сверка с файлом: https://docs.google.com/document/d/1qLlPyqKplHw5P3fPJUZ6qqSsHRHnCQiZ49SmAYVRRaI/edit");
+                    break;
+                case "лабораторная работа+отчёт+блоксхема":
+                    State[chatId] = States.SearchOOPLabPlus;
+                    await botClient.SendTextMessageAsync(chatId, "Введите номер лабораторной и номер задания (1-13):\n" +
+                    "Сверка с файлом: https://docs.google.com/document/d/1qLlPyqKplHw5P3fPJUZ6qqSsHRHnCQiZ49SmAYVRRaI/edit");
+                    break;
+                case "блоксхема по вашему коду":
+                    State[chatId] = States.SearchOOPBlock;
+                    await botClient.SendTextMessageAsync(chatId, "Пока в разработке"); // ???
+                    break;
+                case "назад":
+                    State[chatId] = States.SearchLesson;
+                    break;
+                default:
+                    await botClient.SendTextMessageAsync(chatId, "Ошибка, пробуй снова!");
+                    break;
+            }
+        }
+
+        private static async Task SearchOOPLab(ITelegramBotClient botClient, Update update, long chatId)
+        {
+            int[] arr = GetNumbers(update.Message.Text);
+            await botClient.SendTextMessageAsync(chatId, $"Num lab - {arr[0]}, num Task - {arr[1]}");
+        }
+
+        private static async Task SearchOOpLabPlus(ITelegramBotClient botClient, Update update, long chatId)
+        {
+            int[] arr = GetNumbers(update.Message.Text);
+            //await botClient.SendDocumentAsync(chatId, )
+            await botClient.SendTextMessageAsync(chatId, $"Тут будет отправка архива, но я хочу спать и сделаю ее позже.\n{arr.GetValue(0)} - {arr.GetValue(1)}\n");
+        }
+
+
         #endregion
 
-        
+
 
         public static async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
         {
@@ -230,6 +285,7 @@ namespace StankinBot_v1
 
     public enum States
     {
-        Start, Home,SearchLesson ,SearchNachert, SearchNachertMetr, SearchNachertBodyWindow, SearchOP, SearchOPLab, SearchOPLabPlus, SearchOPBlock
+        Start, Home,SearchLesson ,SearchNachert, SearchNachertMetr, SearchNachertBodyWindow, SearchOP, SearchOPLab, SearchOPLabPlus, SearchOPBlock,
+        SearchOOP, SearchOOPLab, SearchOOPLabPlus, SearchOOPBlock,
     }
 }
