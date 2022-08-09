@@ -28,11 +28,20 @@ namespace StankinBot_v1
         };
 
         public static ReplyKeyboardMarkup replyKeyboardNachert = new(new[]
-{
-            new KeyboardButton[] { "1) Метрические задачи"},
-            new KeyboardButton[] { "2) Тело с окном" },
-            new KeyboardButton[] { "3) 4 задачки на А4" },
-            new KeyboardButton[] { " 4) Помощь на контрольной работе(?)" },
+        {
+            new KeyboardButton[] { "Метрические задачи", "Тело с окном"},
+            new KeyboardButton[] { "4 задачки на А4", "Контрольная работа" },
+            new KeyboardButton[] { "Назад" },
+        })
+        {
+            ResizeKeyboard = true
+        };
+
+        public static ReplyKeyboardMarkup replySearchKeybord = new(new[]
+        {
+            new KeyboardButton[] { "Лабораторная работа"},
+            new KeyboardButton[] { "Лабораторная работа+Отчёт+Блоксхема" },
+            new KeyboardButton[] { "Блоксхема по вашему коду" },
             new KeyboardButton[] { "Назад" },
         })
         {
