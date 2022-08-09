@@ -48,6 +48,14 @@ namespace StankinBot_v1
             ResizeKeyboard = true
         };
 
+        public static ReplyKeyboardMarkup replyEmptyKeybord = new(new[]
+        {
+            new KeyboardButton[] { ""},
+        })
+        {
+            ResizeKeyboard = true
+        };
+
         #endregion
     }
 }

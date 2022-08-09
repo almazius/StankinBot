@@ -23,51 +23,112 @@ namespace StankinBot_v1
             if (update.Message.Text == "/start")
             {
                 State[chatId] = States.Start;
+            } 
+            else if (update.Message.Text.ToLower() == "назад") // обработка кнопки "назад"
+            {
+                State[chatId] = GoToBaack(State[chatId]);
             }
-            switch (State[chatId])
+            else
+            {
+                switch (State[chatId])
+                {
+                    case States.Start:
+                        await Start(botClient, chatId);
+                        break;
+                    case States.Home:
+                        await Home(botClient, chatId);
+                        break;
+                    case States.SearchLesson:
+                        await SearchLesson(botClient, update, chatId);
+                        break;
+                    case States.SearchNachert:
+                        await SearchNachert(botClient, update, chatId);
+                        break;
+                    case States.SearchNachertMetr:
+                        await SearchNachertMetr(botClient, update, chatId);
+                        break;
+                    case States.SearchNachertBodyWindow:
+                        break;
+                    case States.SearchOP:
+                        await SearchOP(botClient, update, chatId);
+                        break;
+                    case States.SearchOPLab:
+                        await SearchOPLab(botClient, update, chatId);
+                        break;
+                    case States.SearchOPLabPlus:
+                        await SearchOpLabPlus(botClient, update, chatId);
+                        break;
+                    case States.SearchOPBlock:
+                        // empty
+                        break;
+                    case States.SearchOOP:
+                        await SearchOOP(botClient, update, chatId);
+                        break;
+                    case States.SearchOOPLab:
+                        await SearchOOPLab(botClient, update, chatId);
+                        break;
+                    case States.SearchOOPLabPlus:
+                        await SearchOOpLabPlus(botClient, update, chatId);
+                        break;
+                    default:
+                        await botClient.SendTextMessageAsync(chatId, "Неизвестная ошибка!");
+                        break;
+                }
+            }
+        }
+
+        private static States GoToBaack(States states)
+        {
+            States status;
+            switch (states)
             {
                 case States.Start:
-                    await Start(botClient, chatId);
+                    status = States.Home;
                     break;
                 case States.Home:
-                    await Home(botClient, chatId);
+                    status = States.Home;
                     break;
                 case States.SearchLesson:
-                    await SearchLesson(botClient, update, chatId);
+                    status = States.Home;
                     break;
                 case States.SearchNachert:
-                    await SearchNachert(botClient, update, chatId);
+                    status = States.SearchLesson;
                     break;
                 case States.SearchNachertMetr:
-                    await SearchNachertMetr(botClient, update, chatId);
+                    status = States.SearchNachert;
                     break;
                 case States.SearchNachertBodyWindow:
+                    status = States.SearchNachertMetr;
                     break;
                 case States.SearchOP:
-                    await SearchOP(botClient, update, chatId);
+                    status = States.SearchLesson;
                     break;
                 case States.SearchOPLab:
-                    await SearchOPLab(botClient, update, chatId);
+                    status = States.SearchOP;
                     break;
                 case States.SearchOPLabPlus:
-                    await SearchOpLabPlus(botClient, update, chatId);
+                    status = States.SearchOP;
                     break;
                 case States.SearchOPBlock:
-                    // empty
+                    status = States.SearchOP;
                     break;
                 case States.SearchOOP:
-                    await SearchOOP(botClient, update, chatId);
+                    status = States.SearchLesson;
                     break;
                 case States.SearchOOPLab:
-                    await SearchOOPLab(botClient, update, chatId);
+                    status = States.SearchOOP;
                     break;
                 case States.SearchOOPLabPlus:
-                    await SearchOOpLabPlus(botClient, update, chatId);
+                    status = States.SearchOOP;
+                    break;
+                case States.SearchOOPBlock:
+                    status = States.SearchOOP;
                     break;
                 default:
-                    await botClient.SendTextMessageAsync(chatId, "Неизвестная ошибка!");
+                    status = States.Start;
                     break;
             }
+            return status;
         }
 
         #region Tasks
@@ -102,7 +163,7 @@ namespace StankinBot_v1
             {
                 State[chatId] = States.SearchOP;
                 await botClient.SendTextMessageAsync(chatId, "Что конкретно Вас интересует?" +
-            "\n\t1) Лабораторная работа\n\t2) Лабораторная работа+Отчёт+Блоксхема\n\t3) Блоксхема по вашему коду(?)", 
+            "\n\t1) Лабораторная работа\n\t2) Лабораторная работа+Отчёт+Блоксхема\n\t3) Блоксхема по вашему коду(?)",
             replyMarkup: KeyBoards.replySearchKeybord);
             }
             else if (update.Message.Text.ToLower() == "объектно - ориентированное программирование")
@@ -124,11 +185,15 @@ namespace StankinBot_v1
 
         private static async Task SearchNachert(ITelegramBotClient botClient, Update update, long chatId)
         {
+            await botClient.SendTextMessageAsync(chatId, "Что конкретно Вас интересует?" +
+             "\n\t1) Метрические задачи\n\t2) Тело с окном\n\t3) 4 задачки на А4\n\t4) Помощь на контрольной работе(?)",
+            replyMarkup: KeyBoards.replyKeyboardNachert);
+
             switch (update.Message.Text.ToLower())        // Проверка условия: что интересует
             {
                 case "метрические задачи":
                     State[chatId] = States.SearchNachertMetr;
-                    using (var stream = System.IO.File.OpenRead("D:\\DEV\\StankinBot_v1\\StankinBot_v1\\image/Metrichki_variants.jpg"))
+                    using (var stream = System.IO.File.OpenRead($"C:\\Users\\boy20\\Source\\Repos\\almazius\\StankinBot\\StankinBot_v1\\image\\Metrichki_variants.jpg"))
                     {
                         InputOnlineFile input = new InputOnlineFile(stream);
                         await botClient.SendPhotoAsync(chatId, stream, "Сверьте точки и напишите ваш вариант.");
@@ -143,11 +208,8 @@ namespace StankinBot_v1
                 case "помощь на контрольной работе(?)":
                     //
                     break;
-                case "назад":
-                    State[chatId] = State[chatId] - 1;
-                    break;
                 default:
-                    await botClient.SendTextMessageAsync(chatId, "Ошибка, пробуй снова!");
+                    //await botClient.SendTextMessageAsync(chatId, "Ошибка, пробуй снова.......!");
                     break;
             }
         }
