@@ -101,13 +101,18 @@ namespace StankinBot_v1
 
         private static async Task HandleCallback(ITelegramBotClient botClient, long chatId, Update update)
         {
-            Message msg;
-            await botClient.SendTextMessageAsync(chatId, update.CallbackQuery.Data.ToString());
-            msg = await botClient.SendTextMessageAsync(chatId, update.CallbackQuery.Data.ToString());
 
+            switch (update.CallbackQuery.Data)
+            {
+                case "nachert":
+                    SearchNachert(botClient, update, chatId);
+                    break;
+                default:
+                    break;
+            }
 
             //int msgId = 0;
-            await botClient.EditMessageTextAsync(chatId, msg.MessageId, "1243");
+            //await botClient.EditMessageTextAsync(chatId, update.CallbackQuery.Message.MessageId, "1243");
             //if (update.CallbackQuery.Data == "nachert")
             //{
                 //await botClient.DeleteMessageAsync(chatId, update.Message.MessageId + 1);
@@ -228,67 +233,11 @@ namespace StankinBot_v1
         private static async Task SearchLesson(ITelegramBotClient botClient, Update update, long chatId)
         {
             await botClient.SendTextMessageAsync(chatId, "Выберите интересующий вас предмет", replyMarkup: KeyBoards.lessionSelect);
-            /*
-            if (update.Message.Type == Telegram.Bot.Types.Enums.MessageType.Text && (update.Message.Text.ToLower() == "начертательная геометрия"))
-            {
-                State[chatId] = States.SearchNachert;
-                await botClient.SendTextMessageAsync(chatId, "Что конкретно Вас интересует?" +
-             "\n\t1) Метрические задачи\n\t2) Тело с окном\n\t3) 4 задачки на А4\n\t4) Помощь на контрольной работе(?)",
-            replyMarkup: KeyBoards.replyKeyboardNachert);
-            }
-            else if (update.Message.Text.ToLower() == "основые программирования")
-            {
-                State[chatId] = States.SearchOP;
-                await botClient.SendTextMessageAsync(chatId, "Что конкретно Вас интересует?" +
-            "\n\t1) Лабораторная работа\n\t2) Лабораторная работа+Отчёт+Блоксхема\n\t3) Блоксхема по вашему коду(?)",
-            replyMarkup: KeyBoards.replySearchKeybord);
-            }
-            else if (update.Message.Text.ToLower() == "объектно - ориентированное программирование")
-            {
-                State[chatId] = States.SearchOOP;
-                await botClient.SendTextMessageAsync(chatId, "Что конкретно Вас интересует?" +
-            "\n\t1) Лабораторная работа\n\t2) Лабораторная работа+Отчёт+Блоксхема\n\t3) Блоксхема по вашему коду(?)",
-            replyMarkup: KeyBoards.replySearchKeybord);
-            }
-            else if (update.Message.Text.ToLower() == "технические средства информационных систем")
-            {
-                //
-            }
-            else if (update.Message.Text == "Назад")
-            {
-                State[chatId] = State[chatId] - 1;
-            }*/
         }
 
         private static async Task SearchNachert(ITelegramBotClient botClient, Update update, long chatId)
         {
-            await botClient.SendTextMessageAsync(chatId, "Что конкретно Вас интересует?" +
-             "\n\t1) Метрические задачи\n\t2) Тело с окном\n\t3) 4 задачки на А4\n\t4) Помощь на контрольной работе(?)",
-            replyMarkup: KeyBoards.replyKeyboardNachert);
-
-            switch (update.Message.Text.ToLower())        // Проверка условия: что интересует
-            {
-                case "метрические задачи":
-                    State[chatId] = States.SearchNachertMetr;
-                    using (var stream = System.IO.File.OpenRead($"C:\\Users\\boy20\\Source\\Repos\\almazius\\StankinBot\\StankinBot_v1\\image\\Metrichki_variants.jpg"))
-                    {
-                        InputOnlineFile input = new InputOnlineFile(stream);
-                        await botClient.SendPhotoAsync(chatId, stream, "Сверьте точки и напишите ваш вариант.");
-                    }
-                    break;
-                case "тело с окном":
-                    //
-                    break;
-                case "4 задачки на а4":
-                    //
-                    break;
-                case "помощь на контрольной работе(?)":
-                    //
-                    break;
-                default:
-                    //await botClient.SendTextMessageAsync(chatId, "Ошибка, пробуй снова.......!");
-                    break;
-            }
+            await botClient.EditMessageTextAsync(chatId, update.CallbackQuery.Message.MessageId, "Выберите нужную вам задачу:", replyMarkup: KeyBoards.keyboardNachert);
         }
 
         private static async Task SearchNachertMetr(ITelegramBotClient botClient, Update update, long chatId)
