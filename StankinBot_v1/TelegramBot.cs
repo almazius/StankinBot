@@ -105,7 +105,21 @@ namespace StankinBot_v1
             switch (update.CallbackQuery.Data)
             {
                 case "nachert":
-                    SearchNachert(botClient, update, chatId);
+                    await SearchNachert(botClient, update, chatId);
+                    break;
+                case "metrich":
+                    await SearchNachertMetr(botClient, update, chatId);
+                    break;
+                case "telo_s_oknom":
+                    break;
+                case "on_A4":
+                    break;
+                case "control_work":
+                    break;
+                case "any_nachrt":
+                    break;
+                case "back":
+                    await SearchLesson(botClient, update, chatId);
                     break;
                 default:
                     break;
@@ -179,6 +193,9 @@ namespace StankinBot_v1
                     case States.SearchOOPLabPlus:
                         await SearchOOpLabPlus(botClient, update, chatId);
                         break;
+                    case States.SelectNachertMetrich:
+                        await SelectNachertMetrich(botClient, update, chatId);
+                        break;
                     default:
                         await botClient.SendTextMessageAsync(chatId, "Неизвестная ошибка!");
                         break;
@@ -187,6 +204,29 @@ namespace StankinBot_v1
             else if (update.Message.Type == Telegram.Bot.Types.Enums.MessageType.Sticker)
             {
                 await botClient.SendTextMessageAsync(chatId, "Прекрасый стикер, но я не понимаю его. Напиши текстом \nпжпжпжпж");
+            }
+        }
+
+        private static async Task SelectNachertMetrich(ITelegramBotClient botClient, Update update, long chatId)
+        {
+            if (update.Message.Type == Telegram.Bot.Types.Enums.MessageType.Text)
+            {
+                string variant;
+                variant = update.Message.Text;
+                if (System.IO.File.Exists(@$"C:\Users\boy20\Source\Repos\almazius\StankinBot\StankinBot_v1\image\variant{variant}.jpg")) 
+                {
+                    using (var stream = System.IO.File.OpenRead(@$"C:\Users\boy20\Source\Repos\almazius\StankinBot\StankinBot_v1\image\variant{variant}.jpg"))
+                    {
+                        InputOnlineFile input = new InputOnlineFile(stream);
+                        await botClient.SendPhotoAsync(chatId, input, "Ваша работа");
+                    }
+                }
+                else
+                {
+                    await botClient.SendTextMessageAsync(chatId, "Заказ успешно оформлен.");
+                    State[chatId] = States.Home;
+                }
+                // dell variki and chang menu
             }
         }
 
@@ -242,23 +282,14 @@ namespace StankinBot_v1
 
         private static async Task SearchNachertMetr(ITelegramBotClient botClient, Update update, long chatId)
         {
-            if (update.Message.Text == "Назад")
+            await botClient.EditMessageTextAsync(chatId, update.CallbackQuery.Message.MessageId, "Напишите номер вашего варианта в сообщении", replyMarkup: KeyBoards.keyboardMetrich);
+            using (var stream = System.IO.File.OpenRead(@"C:\Users\boy20\Source\Repos\almazius\StankinBot\StankinBot_v1\image\Metrichki_variants.jpg"))
             {
-                State[chatId] = State[chatId] - 1;
+                InputOnlineFile input = new InputOnlineFile(stream);
+                await botClient.SendPhotoAsync(chatId, input, "Выберите необходимый вариант");
             }
-            else if (Convert.ToInt32(update.Message.Text) > 0 && Convert.ToInt32(update.Message.Text) < 33)
-            {
-                using (var stream = System.IO.File.OpenRead($"D:\\DEV\\StankinBot_v1\\StankinBot_v1\\image\\variant{update.Message.Text}.jpg"))
-                {
-                    InputOnlineFile input = new InputOnlineFile(stream);
-                    await botClient.SendPhotoAsync(chatId, stream);
-                }
-                State[chatId] = States.Home;
-            }
-            else
-            {
-                await botClient.SendTextMessageAsync(chatId, "Вы ошиблись, попробуйте еще раз.");
-            }
+            State[chatId] = States.SelectNachertMetrich;
+            
         }
 
         private static async Task SearchOP(ITelegramBotClient botClient, Update update, long chatId)
@@ -375,5 +406,6 @@ namespace StankinBot_v1
     {
         Start, Home, CategorySelect,SearchLesson ,SearchNachert, SearchNachertMetr, SearchNachertBodyWindow, SearchOP, SearchOPLab, SearchOPLabPlus, SearchOPBlock,
         SearchOOP, SearchOOPLab, SearchOOPLabPlus, SearchOOPBlock,
+        SelectNachertMetrich,
     }
 }
