@@ -23,7 +23,7 @@ namespace StankinBot_v1
             if (update.Message.Text == "/start")
             {
                 State[chatId] = States.Start;
-            } 
+            }
             else if (update.Message.Text.ToLower() == "назад") // обработка кнопки "назад"
             {
                 State[chatId] = GoToBaack(State[chatId]);
@@ -136,17 +136,17 @@ namespace StankinBot_v1
         {
 
             State[chatId] = States.Home;
-            await botClient.SendTextMessageAsync(chatId, "Привет!\n Рад приветсвтовать! Здесь ты всегда можешь запростить помощь по таким предметам как:" +
-                ("\n Начертательная геометрия\n Основые программирования\n Объектно-ориентированное программирование\n ТЕХНИЧЕСКИЕ СРЕДСТВА ИНФОРМАЦИОННЫХ СИСТЕМ").ToUpper(),
-                replyMarkup: KeyBoards.replyKeyboardHome);
+            //await botClient.SendTextMessageAsync(chatId, "Привет!\n Рад приветсвтовать! Здесь ты всегда можешь запростить помощь по таким предметам как:" +
+            //    ("\n Начертательная геометрия\n Основые программирования\n Объектно-ориентированное программирование\n ТЕХНИЧЕСКИЕ СРЕДСТВА ИНФОРМАЦИОННЫХ СИСТЕМ").ToUpper(),
+            //    replyMarkup: KeyBoards.replyKeyboardHome);
             State[chatId] = States.SearchLesson;
         }
 
         private static async Task Home(ITelegramBotClient botClient, long chatId)
         {
-            await botClient.SendTextMessageAsync(chatId, "Выберите необходимый предмет:" +
-                ("\n Начертательная геометрия\n Основые программирования\n Объектно - ориентированное программирование\n ТЕХНИЧЕСКИЕ СРЕДСТВА ИНФОРМАЦИОННЫХ СИСТЕМ").ToUpper(),
-                replyMarkup: KeyBoards.replyKeyboardHome);
+            //await botClient.SendTextMessageAsync(chatId, "Выберите необходимый предмет:" +
+            //    ("\n Начертательная геометрия\n Основые программирования\n Объектно - ориентированное программирование\n ТЕХНИЧЕСКИЕ СРЕДСТВА ИНФОРМАЦИОННЫХ СИСТЕМ").ToUpper(),
+            //    replyMarkup: KeyBoards.replyKeyboardHome);
             State[chatId] = States.SearchLesson;
         }
 
@@ -176,10 +176,6 @@ namespace StankinBot_v1
             else if (update.Message.Text.ToLower() == "технические средства информационных систем")
             {
                 //
-            }
-            else if (update.Message.Text == "Назад")
-            {
-                State[chatId] = State[chatId] - 1;
             }
         }
 
@@ -319,10 +315,55 @@ namespace StankinBot_v1
         {
             int[] arr = GetNumbers(update.Message.Text);
             //await botClient.SendDocumentAsync(chatId, )
-            await botClient.SendTextMessageAsync(chatId, $"Тут будет отправка архива, но я хочу спать и сделаю ее позже.\n{arr.GetValue(0)} - {arr.GetValue(1)}\n");
+            //await botClient.SendTextMessageAsync(chatId, $"Тут будет отправка архива, но я хочу спать и сделаю ее позже.\n{arr.GetValue(0)} - {arr.GetValue(1)}\n");
         }
 
+        private static async Task SendInviteMessage(ITelegramBotClient botClient, long chatId, States status)
+        {
+            switch (status)
+            {
+                case States.Start:
+                    await botClient.SendTextMessageAsync(chatId, "Привет!\n Рад приветсвтовать! Здесь ты всегда можешь запростить помощь по таким предметам как:" +
+                ("\n Начертательная геометрия\n Основые программирования\n Объектно-ориентированное программирование\n ТЕХНИЧЕСКИЕ СРЕДСТВА ИНФОРМАЦИОННЫХ СИСТЕМ").ToUpper(),
+                replyMarkup: KeyBoards.replyKeyboardHome);
+                    break;
+                case States.Home:
+                    await botClient.SendTextMessageAsync(chatId, "Выберите необходимый предмет:" +
+                ("\n Начертательная геометрия\n Основые программирования\n Объектно - ориентированное программирование\n ТЕХНИЧЕСКИЕ СРЕДСТВА ИНФОРМАЦИОННЫХ СИСТЕМ").ToUpper(),
+                replyMarkup: KeyBoards.replyKeyboardHome);
+                    break;
+                case States.SearchLesson:
+                    await botClient.SendTextMessageAsync(chatId, "Выберите необходимый предмет:" +
+                ("\n Начертательная геометрия\n Основые программирования\n Объектно - ориентированное программирование\n ТЕХНИЧЕСКИЕ СРЕДСТВА ИНФОРМАЦИОННЫХ СИСТЕМ").ToUpper(),
+                replyMarkup: KeyBoards.replyKeyboardHome);
+                    break;
+                case States.SearchNachert:
+                    break;
+                case States.SearchNachertMetr:
+                    break;
+                case States.SearchNachertBodyWindow:
+                    break;
+                case States.SearchOP:
+                    break;
+                case States.SearchOPLab:
+                    break;
+                case States.SearchOPLabPlus:
+                    break;
+                case States.SearchOPBlock:
+                    break;
+                case States.SearchOOP:
+                    break;
+                case States.SearchOOPLab:
+                    break;
+                case States.SearchOOPLabPlus:
 
+                    break;
+                case States.SearchOOPBlock:
+                    break;
+                default:
+                    break;
+            }
+        }
         #endregion
 
 
