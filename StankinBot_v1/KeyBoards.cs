@@ -18,10 +18,9 @@ namespace StankinBot_v1
         #region Keyboards
         public static ReplyKeyboardMarkup replyKeyboardHome = new(new[]
         {
-            new KeyboardButton[] { "НАЧЕРТАТЕЛЬНАЯ ГЕОМЕТРИЯ"},
-            new KeyboardButton[] { "ОСНОВЫЕ ПРОГРАММИРОВАНИЯ" },
-            new KeyboardButton[] { "ОБЪЕКТНО-ОРИЕНТИРОВАННОЕ ПРОГРАММИРОВАНИЕ" },
-            new KeyboardButton[] { "ТЕХНИЧЕСКИЕ СРЕДСТВА ИНФОРМАЦИОННЫХ СИСТЕМ" },
+            new KeyboardButton[] { "Купить", "Профиль"},
+            new KeyboardButton[] { "БОНУС" },
+            new KeyboardButton[] { "Главная", "Назад" },
         })
         {
             ResizeKeyboard = true
@@ -50,11 +49,19 @@ namespace StankinBot_v1
 
         public static ReplyKeyboardMarkup replyEmptyKeybord = new(new[]
         {
-            new KeyboardButton[] { ""},
+            new KeyboardButton[] {""},
         })
         {
             ResizeKeyboard = true
         };
+
+        public static InlineKeyboardMarkup lessionSelect = new (new[]
+        {
+            new [] {InlineKeyboardButton.WithCallbackData(text: "Начертательная геометрия", callbackData: "nachert") },
+            new [] {InlineKeyboardButton.WithCallbackData(text: "Программирование", callbackData: "proga") },
+            new [] {InlineKeyboardButton.WithCallbackData(text: "Технические средства информационных систем", callbackData: "tsis") },
+
+        });
 
         #endregion
     }
