@@ -119,7 +119,11 @@ namespace StankinBot_v1
                 case "any_nachrt":
                     break;
                 case "back":
-                    await SearchLesson(botClient, update, chatId);
+                    await botClient.EditMessageTextAsync(chatId, update.CallbackQuery.Message.MessageId,
+                "Выберите интересующий вас предмет", replyMarkup: KeyBoards.lessionSelect);
+                    break;
+                case "back_nachert":
+                    await SearchNachert(botClient, update, chatId);
                     break;
                 default:
                     break;
@@ -277,16 +281,19 @@ namespace StankinBot_v1
 
         private static async Task SearchNachert(ITelegramBotClient botClient, Update update, long chatId)
         {
-            await botClient.EditMessageTextAsync(chatId, update.CallbackQuery.Message.MessageId, "Выберите нужную вам задачу:", replyMarkup: KeyBoards.keyboardNachert);
+            await botClient.DeleteMessageAsync(chatId, update.CallbackQuery.Message.MessageId);
+            await botClient.SendTextMessageAsync(chatId, "Выберите нужную вам задачу:", replyMarkup: KeyBoards.keyboardNachert);
         }
 
-        private static async Task SearchNachertMetr(ITelegramBotClient botClient, Update update, long chatId)
+        private static async Task SearchNachertMetr(ITelegramBotClient botClient, Update update, long chatId) ///
         {
-            await botClient.EditMessageTextAsync(chatId, update.CallbackQuery.Message.MessageId, "Напишите номер вашего варианта в сообщении", replyMarkup: KeyBoards.keyboardMetrich);
+            Message message;
+            await botClient.DeleteMessageAsync(chatId, update.CallbackQuery.Message.MessageId);
+            //await botClient.EditMessageTextAsync(chatId, update.CallbackQuery.Message.MessageId, "Выберите номер вашего варианта", replyMarkup: KeyBoards.keyboardMetrich);
             using (var stream = System.IO.File.OpenRead(@"C:\Users\boy20\Source\Repos\almazius\StankinBot\StankinBot_v1\image\Metrichki_variants.jpg"))
             {
                 InputOnlineFile input = new InputOnlineFile(stream);
-                await botClient.SendPhotoAsync(chatId, input, "Выберите необходимый вариант");
+                message = await botClient.SendPhotoAsync(chatId, input, "Выберите необходимый вариант", replyMarkup: KeyBoards.keyboardMetrich);
             }
             State[chatId] = States.SelectNachertMetrich;
             
