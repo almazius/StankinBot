@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <Folder Include="image\" />
+    <Folder Include="Task\" />
   </ItemGroup>
 
 </Project>

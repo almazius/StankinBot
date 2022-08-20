@@ -28,14 +28,16 @@ namespace StankinBot_v1
 
         public static InlineKeyboardMarkup keyboardNachert = new(new[]
         {
-            new [] { InlineKeyboardButton.WithCallbackData(text: "Метрические задачи", callbackData: "metrich"),
-                InlineKeyboardButton.WithCallbackData(text: "Тело с окном", callbackData: "telo_s_oknom")},
-            new [] { InlineKeyboardButton.WithCallbackData(text: "4 задачи на А4", callbackData: "on_A4"),
-                InlineKeyboardButton.WithCallbackData(text: "Контрольная работа", callbackData: "control_work")},
+            new [] { InlineKeyboardButton.WithCallbackData(text: "Метрические задачи", callbackData: "metrich") },
+            new [] { InlineKeyboardButton.WithCallbackData(text: "Контрольная работа", callbackData: "control_work")},
             new [] { InlineKeyboardButton.WithCallbackData(text: "Другое", callbackData: "any_nachert")},
             new [] { InlineKeyboardButton.WithCallbackData(text: "Назад", callbackData: "back")},
-            //new KeyboardButton[] { "4 задачки на А4", "Контрольная работа" },
-            //new KeyboardButton[] { "Назад" },
+        });
+
+        public static InlineKeyboardMarkup keyboardNachertAnyWork = new(new[]
+        {
+            new [] { InlineKeyboardButton.WithCallbackData(text: "Готово ✅", callbackData: "success_nachert_any") },
+            new [] { InlineKeyboardButton.WithCallbackData(text: "Назад", callbackData: "back")},
         });
 
         public static InlineKeyboardMarkup keyboardMetrich = new(new[]
@@ -93,6 +95,7 @@ namespace StankinBot_v1
         {
             ResizeKeyboard = true
         };
+
 
         public static ReplyKeyboardMarkup replyEmptyKeybord = new(new[]
         {
