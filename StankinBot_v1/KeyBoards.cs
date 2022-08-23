@@ -85,25 +85,7 @@ namespace StankinBot_v1
                 InlineKeyboardButton.WithCallbackData(text: "Назад", callbackData: "back_nachert")},
         });
 
-        public static ReplyKeyboardMarkup replySearchKeybord = new(new[]
-        {
-            new KeyboardButton[] { "Лабораторная работа"},
-            new KeyboardButton[] { "Лабораторная работа+Отчёт+Блоксхема" },
-            new KeyboardButton[] { "Блоксхема по вашему коду" },
-            new KeyboardButton[] { "Назад" },
-        })
-        {
-            ResizeKeyboard = true
-        };
 
-
-        public static ReplyKeyboardMarkup replyEmptyKeybord = new(new[]
-        {
-            new KeyboardButton[] {""},
-        })
-        {
-            ResizeKeyboard = true
-        };
 
         public static InlineKeyboardMarkup lessionSelect = new (new[]
         {

@@ -69,19 +69,28 @@ namespace StankinBot_v1
                     await SearchNachertAny(botClient, update, chatId);
                     break;
                 case "control_work":
+                    await botClient.SendTextMessageAsync(chatId, "Пока в разработке.");
                     break;
                 case "back":
                     await botClient.EditMessageTextAsync(chatId, update.CallbackQuery.Message.MessageId,
                 "Выберите интересующий вас предмет", replyMarkup: KeyBoards.lessionSelect);
+                    State[chatId] = States.Home;
                     break;
                 case "back_nachert":
                     await SearchNachert(botClient, update, chatId);
                     break;
+                case "proga":
+                    ///
+                    break;
                 case "success_nachert_any":
                     State[chatId] = States.Home;
-                    if(ArchiveAndSend(chatId))
+                    if (ArchiveAndSend(chatId))
                     {
                         await botClient.SendTextMessageAsync(chatId, "Ваш заказ принят к выполнению! Ожидайте.");
+                    }
+                    else
+                    {
+                        await botClient.SendTextMessageAsync(chatId, "Произошла какая-то ошиибка! Попробуйте снова.");
                     }
                     // тут будут обработка заказа
                     break;
@@ -92,7 +101,6 @@ namespace StankinBot_v1
 
         private static async Task HandleMessage(ITelegramBotClient botClient, long chatId, Update update)
         {
-            Console.WriteLine(update.Message.Type);
             if (update.Message.Type == Telegram.Bot.Types.Enums.MessageType.Text)
             {
                 if (update.Message.Text == "/start")
@@ -264,7 +272,7 @@ namespace StankinBot_v1
             await botClient.EditMessageTextAsync(chatId, update.CallbackQuery.Message.MessageId,
                 "Отправьте фотографии и опишите задание и нажимите кнопку \"готово\"", replyMarkup: KeyBoards.keyboardNachertAnyWork);
             State[chatId] = States.SearchNachertAnyWork;
-            Directory.CreateDirectory($@"C:\Users\boy20\Source\Repos\almazius\StankinBot\StankinBot_v1\Task_{chatId}");
+            Directory.CreateDirectory($@"C:\Users\boy20\Source\Repos\almazius\StankinBot\StankinBot_v1\Task_{chatId}"); 
         }
 
         private static async Task CheckQuestNachert(ITelegramBotClient botClient, Update update, long chatId)
@@ -284,6 +292,13 @@ namespace StankinBot_v1
                 using (var saveImageStream = new FileStream(path, FileMode.Create))
                 {
                     await botClient.DownloadFileAsync(file.FilePath, saveImageStream);
+                }
+                if (!String.IsNullOrEmpty(update.Message.Caption))
+                {
+                    path += "_Caption.txt";
+                    var fileText = System.IO.File.CreateText(path);
+                    await fileText.WriteAsync(update.Message.Caption);
+                    fileText.Close();
                 }
             }
             else
@@ -404,12 +419,18 @@ namespace StankinBot_v1
 
         private static bool ArchiveAndSend(long chatId)
         {
-            ZipFile.CreateFromDirectory(@$"C:\Users\boy20\Source\Repos\almazius\StankinBot\StankinBot_v1\Task_{chatId}",
-                chatId.ToString() + "_" + count.ToString() +".zip");
-            // tyt otpravka na server (drygoi bot)
+            if(Directory.EnumerateFiles(@$"C:\Users\boy20\Source\Repos\almazius\StankinBot\StankinBot_v1\Task_{chatId}",
+                "*.*", SearchOption.AllDirectories).Any())
+            {
+                ZipFile.CreateFromDirectory(@$"C:\Users\boy20\Source\Repos\almazius\StankinBot\StankinBot_v1\Task_{chatId}",
+                "Nachert" + chatId.ToString() + "_" + count.ToString() + ".zip");
+                // tyt otpravka na server (drygoi bot)
+                Directory.Delete(@$"C:\Users\boy20\Source\Repos\almazius\StankinBot\StankinBot_v1\Task_{chatId}", true);
+                CompletedOrder();
+                return true;
+            }
             Directory.Delete(@$"C:\Users\boy20\Source\Repos\almazius\StankinBot\StankinBot_v1\Task_{chatId}", true);
-            CompletedOrder();
-            return true;
+            return false;
         }
 
         private static void CompletedOrder()
