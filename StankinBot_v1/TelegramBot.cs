@@ -18,10 +18,10 @@ namespace StankinBot_v1
 {
     internal class TelegramBot
     {
-        private static Random rnd = new Random(); // DELETE!!!
+        readonly private static Random rnd = new (); // DELETE!!!
         private static long count = rnd.Next();
 
-        public static Dictionary<long, States> State = new Dictionary<long, States>();
+        public static Dictionary<long, States> State = new ();
         
         public static async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
@@ -67,6 +67,7 @@ namespace StankinBot_v1
                     break;
                 case "any_nachert":
                     await SearchNachertAny(botClient, update, chatId);
+                    State[chatId] = States.SearchNachertAnyWork;
                     break;
                 case "control_work":
                     await botClient.SendTextMessageAsync(chatId, "Пока в разработке.");
@@ -80,10 +81,14 @@ namespace StankinBot_v1
                     await SearchNachert(botClient, update, chatId);
                     break;
                 case "proga":
-                    ///
+                    await SearchNachertAny(botClient, update, chatId);
+                    State[chatId] = States.SearchProga;
                     break;
-                case "success_nachert_any":
-                    State[chatId] = States.Home;
+                case "tsis":
+                    await SearchNachertAny(botClient, update, chatId);
+                    State[chatId] = States.SearchTSIS;
+                    break;
+                case "success_order":
                     if (ArchiveAndSend(chatId))
                     {
                         await botClient.SendTextMessageAsync(chatId, "Ваш заказ принят к выполнению! Ожидайте.");
@@ -92,6 +97,7 @@ namespace StankinBot_v1
                     {
                         await botClient.SendTextMessageAsync(chatId, "Произошла какая-то ошиибка! Попробуйте снова.");
                     }
+                    State[chatId] = States.Home;
                     // тут будут обработка заказа
                     break;
                 default:
@@ -111,7 +117,6 @@ namespace StankinBot_v1
                 {
                     State[chatId] = States.Home;
                 }
- 
                 switch (State[chatId])
                 {
                     case States.Start:
@@ -124,7 +129,7 @@ namespace StankinBot_v1
                         await CategorySelect(botClient, update, chatId);
                         break;
                     case States.SearchLesson:
-                        await SearchLesson(botClient, update, chatId);
+                        //await SearchLesson(botClient, update, chatId);
                         break;
                     case States.SearchNachert:
                         await SearchNachert(botClient, update, chatId);
@@ -135,29 +140,8 @@ namespace StankinBot_v1
                     case States.SearchNachertAnyWork:
                         await CheckQuestNachert(botClient, update, chatId);
                         break;
-                    case States.SearchOP:
-                        await SearchOP(botClient, update, chatId);
-                        break;
-                    case States.SearchOPLab:
-                        await SearchOPLab(botClient, update, chatId);
-                        break;
-                    case States.SearchOPLabPlus:
-                        await SearchOpLabPlus(botClient, update, chatId);
-                        break;
-                    case States.SearchOPBlock:
-                        // empty
-                        break;
-                    case States.SearchOOP:
-                        await SearchOOP(botClient, update, chatId);
-                        break;
-                    case States.SearchOOPLab:
-                        await SearchOOPLab(botClient, update, chatId);
-                        break;
-                    case States.SearchOOPLabPlus:
-                        await SearchOOpLabPlus(botClient, update, chatId);
-                        break;
-                    case States.SelectNachertMetrich:
-                        await SelectNachertMetrich(botClient, update, chatId);
+                    case States.SearchProga:
+                        await CheckQuestNachert(botClient, update, chatId);
                         break;
                     default:
                         await botClient.SendTextMessageAsync(chatId, "Неизвестная ошибка!");
@@ -166,13 +150,20 @@ namespace StankinBot_v1
             }
             else if(update.Message.Type == Telegram.Bot.Types.Enums.MessageType.Photo)
             {
-                if (State[chatId] == States.SearchNachertAnyWork)
+                switch (State[chatId])
                 {
-                    await CheckQuestNachert(botClient, update, chatId);
-                }
-                else
-                {
-                    await botClient.SendTextMessageAsync(chatId, "Классаня картинка, но я не понимаю её. Напиши текстом \nпжпжпжпж");
+                    case States.SearchNachertAnyWork:
+                        await CheckQuestNachert(botClient, update, chatId);
+                        break;
+                    case States.SearchProga:
+                        await CheckQuestNachert(botClient, update, chatId);
+                        break;
+                    case States.SearchTSIS:
+                        await CheckQuestNachert(botClient, update, chatId);
+                        break;
+                    default:
+                        await botClient.SendTextMessageAsync(chatId, "Классаня картинка, но я не понимаю её. Напиши текстом \nпжпжпжпж");
+                        break;
                 }
             }
             else if (update.Message.Type == Telegram.Bot.Types.Enums.MessageType.Sticker)
@@ -181,15 +172,17 @@ namespace StankinBot_v1
             }
         }
 
+
+
         private static async Task SelectNachertMetrich(ITelegramBotClient botClient, Update update, long chatId) // pererabotat !!!
         {
             string variant;
-            variant = update.CallbackQuery.Data.Substring(12);
+            variant = update.CallbackQuery.Data[12..];
             if (System.IO.File.Exists(@$"C:\Users\boy20\Source\Repos\almazius\StankinBot\StankinBot_v1\image\variant{variant}.jpg"))
             {
                 using (var stream = System.IO.File.OpenRead(@$"C:\Users\boy20\Source\Repos\almazius\StankinBot\StankinBot_v1\image\variant{variant}.jpg"))
                 {
-                    InputOnlineFile input = new InputOnlineFile(stream);
+                    InputOnlineFile input = new (stream);
                     await botClient.SendPhotoAsync(chatId, input);
                 }
             }
@@ -201,7 +194,7 @@ namespace StankinBot_v1
             CompletedOrder();
             await botClient.DeleteMessageAsync(chatId, update.CallbackQuery.Message.MessageId);
             State[chatId] = States.Home;
-            await SearchLesson(botClient, update, chatId);
+            await SearchLesson(botClient, chatId);
         }
 
         private static async Task Start(ITelegramBotClient botClient, long chatId)
@@ -229,7 +222,7 @@ namespace StankinBot_v1
                 switch (update.Message.Text.ToLower())
                 {
                     case "купить":
-                        await SearchLesson(botClient, update, chatId);
+                        await SearchLesson(botClient, chatId);
                         break;
                     case "профиль":
                         // ?
@@ -244,13 +237,14 @@ namespace StankinBot_v1
             
         }
 
-        private static async Task SearchLesson(ITelegramBotClient botClient, Update update, long chatId)
+
+        private static async Task SearchLesson(ITelegramBotClient botClient, long chatId)
         {
             await botClient.SendTextMessageAsync(chatId, "Выберите интересующий вас предмет", replyMarkup: KeyBoards.lessionSelect);
         }
 
         private static async Task SearchNachert(ITelegramBotClient botClient, Update update, long chatId)
-        {
+        {   
             await botClient.DeleteMessageAsync(chatId, update.CallbackQuery.Message.MessageId);
             await botClient.SendTextMessageAsync(chatId, "Выберите нужную вам задачу:", replyMarkup: KeyBoards.keyboardNachert);
         }
@@ -261,7 +255,7 @@ namespace StankinBot_v1
             //await botClient.EditMessageTextAsync(chatId, update.CallbackQuery.Message.MessageId, "Выберите номер вашего варианта", replyMarkup: KeyBoards.keyboardMetrich);
             using (var stream = System.IO.File.OpenRead(@"C:\Users\boy20\Source\Repos\almazius\StankinBot\StankinBot_v1\image\Metrichki_variants.jpg"))
             {
-                InputOnlineFile input = new InputOnlineFile(stream);
+                InputOnlineFile input = new (stream);
                 await botClient.SendPhotoAsync(chatId, input, "Выберите необходимый вариант", replyMarkup: KeyBoards.keyboardMetrich);
             }
             State[chatId] = States.SelectNachertMetrich;
@@ -271,7 +265,6 @@ namespace StankinBot_v1
         {
             await botClient.EditMessageTextAsync(chatId, update.CallbackQuery.Message.MessageId,
                 "Отправьте фотографии и опишите задание и нажимите кнопку \"готово\"", replyMarkup: KeyBoards.keyboardNachertAnyWork);
-            State[chatId] = States.SearchNachertAnyWork;
             Directory.CreateDirectory($@"C:\Users\boy20\Source\Repos\almazius\StankinBot\StankinBot_v1\Task_{chatId}"); 
         }
 
@@ -308,122 +301,39 @@ namespace StankinBot_v1
 
         }
 
-
-        private static async Task SearchOP(ITelegramBotClient botClient, Update update, long chatId)
-        {
-            switch (update.Message.Text.ToLower())
-            {
-                case "лабораторная работа":
-                    State[chatId] = States.SearchOPLab;
-                    await botClient.SendTextMessageAsync(chatId, "Введите номер лабораторной и номер задания (1-13):\n" +
-                    "Сверка с файлом: https://docs.google.com/document/d/1f5l2JHLtRz8EIwaEBQKja41mwLD4E19x/edit");
-                    break;
-                case "лабораторная работа+отчёт+блоксхема":
-                    State[chatId] = States.SearchOPLabPlus;
-                    await botClient.SendTextMessageAsync(chatId, "Введите номер лабораторной и номер задания (1-13):\n" +
-                    "Сверка с файлом: https://docs.google.com/document/d/1f5l2JHLtRz8EIwaEBQKja41mwLD4E19x/edit");
-                    break;
-                case "блоксхема по вашему коду":
-                    State[chatId] = States.SearchOPBlock;
-                    await botClient.SendTextMessageAsync(chatId, "Пока в разработке"); // ???
-                    break;
-                case "назад":
-                    State[chatId] = States.SearchLesson;
-                    break;
-                default:
-                    await botClient.SendTextMessageAsync(chatId, "Ошибка, пробуй снова!");
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Поиск номера лабы и номера задания с последующей отправкой
-        /// </summary>
-        /// <param name="botClient">botClient</param>
-        /// <param name="update"></param>
-        /// <param name="chatId"></param>
-        /// <returns></returns>
-        private static async Task SearchOPLab(ITelegramBotClient botClient, Update update, long chatId)
-        {
-            int[] arr = GetNumbers(update.Message.Text);
-            await botClient.SendTextMessageAsync(chatId, $"Num lab - {arr[0]}, num Task - {arr[1]}");
-        }
-
-        private static async Task SearchOpLabPlus(ITelegramBotClient botClient, Update update, long chatId)
-        {
-            int[] arr = GetNumbers(update.Message.Text);
-            //await botClient.SendDocumentAsync(chatId, )
-            await botClient.SendTextMessageAsync(chatId, $"Тут будет отправка архива, но я хочу спать и сделаю ее позже.\n{arr.GetValue(0)} - {arr.GetValue(1)}\n");
-        }
-
-        private static async Task SearchOOP(ITelegramBotClient botClient, Update update, long chatId)
-        {
-            switch (update.Message.Text.ToLower())
-            {
-                case "лабораторная работа":
-                    State[chatId] = States.SearchOOPLab;
-                    await botClient.SendTextMessageAsync(chatId, "Введите номер лабораторной и номер задания (2-13):\n" +
-                    "Сверка с файлом: https://docs.google.com/document/d/1qLlPyqKplHw5P3fPJUZ6qqSsHRHnCQiZ49SmAYVRRaI/edit");
-                    break;
-                case "лабораторная работа+отчёт+блоксхема":
-                    State[chatId] = States.SearchOOPLabPlus;
-                    await botClient.SendTextMessageAsync(chatId, "Введите номер лабораторной и номер задания (1-13):\n" +
-                    "Сверка с файлом: https://docs.google.com/document/d/1qLlPyqKplHw5P3fPJUZ6qqSsHRHnCQiZ49SmAYVRRaI/edit");
-                    break;
-                case "блоксхема по вашему коду":
-                    State[chatId] = States.SearchOOPBlock;
-                    await botClient.SendTextMessageAsync(chatId, "Пока в разработке"); // ???
-                    break;
-                case "назад":
-                    State[chatId] = States.SearchLesson;
-                    break;
-                default:
-                    await botClient.SendTextMessageAsync(chatId, "Ошибка, пробуй снова!");
-                    break;
-            }
-        }
-
-        private static async Task SearchOOPLab(ITelegramBotClient botClient, Update update, long chatId)
-        {
-            int[] arr = GetNumbers(update.Message.Text);
-            await botClient.SendTextMessageAsync(chatId, $"Num lab - {arr[0]}, num Task - {arr[1]}");
-        }
-
-        private static async Task SearchOOpLabPlus(ITelegramBotClient botClient, Update update, long chatId)
-        {
-            int[] arr = GetNumbers(update.Message.Text);
-            //await botClient.SendDocumentAsync(chatId, )
-            await botClient.SendTextMessageAsync(chatId, $"Тут будет отправка архива, но я хочу спать и сделаю ее позже.\n{arr.GetValue(0)} - {arr.GetValue(1)}\n");
-        }
-
         #endregion
 
 
 
         public static async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
         {
-            // Некоторые действия
             Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(exception));
-        }
-
-
-        private static int[] GetNumbers(string s)
-        {
-            int[] numbers = new int[2];
-            char[] separators = new char[] { ' ', '-', '\\', '/' };
-            string[] temp = s.Split(separators, StringSplitOptions.RemoveEmptyEntries);
-            numbers[0] = Convert.ToInt32(temp[0]);
-            numbers[1] =  Convert.ToInt32(temp[1]);
-            return numbers;
         }
 
         private static bool ArchiveAndSend(long chatId)
         {
-            if(Directory.EnumerateFiles(@$"C:\Users\boy20\Source\Repos\almazius\StankinBot\StankinBot_v1\Task_{chatId}",
+            string nameZip = String.Empty;
+            switch (State[chatId])
+            {
+                
+                case States.SearchNachertAnyWork:
+                    nameZip += "Nachert";
+                    break;
+                case States.SearchProga:
+                    nameZip += "Proga";
+                    break;
+                case States.SearchTSIS:
+                    nameZip += "TSIS";
+                    break;
+                default:
+                    break;
+            }
+            nameZip = nameZip + "_" + chatId.ToString() + "_" + count.ToString() + ".zip";
+            if (Directory.EnumerateFiles(@$"C:\Users\boy20\Source\Repos\almazius\StankinBot\StankinBot_v1\Task_{chatId}",
                 "*.*", SearchOption.AllDirectories).Any())
             {
                 ZipFile.CreateFromDirectory(@$"C:\Users\boy20\Source\Repos\almazius\StankinBot\StankinBot_v1\Task_{chatId}",
-                "Nachert" + chatId.ToString() + "_" + count.ToString() + ".zip");
+                nameZip);
                 // tyt otpravka na server (drygoi bot)
                 Directory.Delete(@$"C:\Users\boy20\Source\Repos\almazius\StankinBot\StankinBot_v1\Task_{chatId}", true);
                 CompletedOrder();
@@ -441,8 +351,9 @@ namespace StankinBot_v1
 
     public enum States
     {
-        Start, Home, CategorySelect,SearchLesson ,SearchNachert, SearchNachertMetr, SearchNachertAnyWork, SearchOP, SearchOPLab, SearchOPLabPlus, SearchOPBlock,
+        Start, Home, CategorySelect,SearchLesson ,SearchNachert, SearchNachertMetr, SearchNachertAnyWork, SearchProga, SearchOPLab, SearchOPLabPlus, SearchOPBlock,
         SearchOOP, SearchOOPLab, SearchOOPLabPlus, SearchOOPBlock,
         SelectNachertMetrich,
+        SearchTSIS,
     }
 }

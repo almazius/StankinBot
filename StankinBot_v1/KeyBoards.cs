@@ -26,6 +26,8 @@ namespace StankinBot_v1
             ResizeKeyboard = true
         };
 
+
+
         public static InlineKeyboardMarkup keyboardNachert = new(new[]
         {
             new [] { InlineKeyboardButton.WithCallbackData(text: "Метрические задачи", callbackData: "metrich") },
@@ -36,7 +38,7 @@ namespace StankinBot_v1
 
         public static InlineKeyboardMarkup keyboardNachertAnyWork = new(new[]
         {
-            new [] { InlineKeyboardButton.WithCallbackData(text: "Готово ✅", callbackData: "success_nachert_any") },
+            new [] { InlineKeyboardButton.WithCallbackData(text: "Готово ✅", callbackData: "success_order") },
             new [] { InlineKeyboardButton.WithCallbackData(text: "Назад", callbackData: "back")},
         });
 

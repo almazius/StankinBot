@@ -10,7 +10,7 @@ namespace StankinBot_v1
     {
         static ITelegramBotClient bot; // созднание клиента бота
 
-        static void Main(string[] args)
+        static void Main()
         {
            bot = new TelegramBotClient("5504971725:AAEZB1QbHxRzDwvb7VryuklME1csVyk_Dkg");
 
