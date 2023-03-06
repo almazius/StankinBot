@@ -12,7 +12,7 @@ namespace StankinBot_v1
 
         static void Main(string[] args)
         {
-           bot = new TelegramBotClient("5504971725:AAEZB1QbHxRzDwvb7VryuklME1csVyk_Dkg");
+           bot = new TelegramBotClient(token);
 
            var cts = new CancellationTokenSource();
 
